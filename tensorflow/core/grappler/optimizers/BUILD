@@ -525,6 +525,7 @@ cc_library(
         ":function_optimizer",
         ":graph_optimizer",
         ":layout_optimizer",
+        ":auto_mixed_precision",
         ":loop_optimizer",
         ":memory_optimizer",
         ":model_pruner",
@@ -609,6 +610,33 @@ tf_cuda_cc_test(
         "//tensorflow/core:lib",
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
+    ],
+)
+
+cc_library(
+    name = "auto_mixed_precision",
+    srcs = ["auto_mixed_precision.cc"],
+    hdrs = [
+        "auto_mixed_precision.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":constant_folding",
+        ":evaluation_utils",
+        ":graph_optimizer",
+        "//tensorflow/core:core_cpu_base",
+        "//tensorflow/core:framework",
+        "//tensorflow/core:lib",
+        "//tensorflow/core:lib_internal",
+        "//tensorflow/core:protos_all_cc",
+        "//tensorflow/core/grappler:graph_topology_view",
+        "//tensorflow/core/grappler:grappler_item",
+        "//tensorflow/core/grappler:mutable_graph_view",
+        "//tensorflow/core/grappler:op_types",
+        "//tensorflow/core/grappler/costs:graph_properties",
+        "//tensorflow/core/grappler/utils:frame",
+        "//tensorflow/core/grappler/utils:traversal",
+        "@com_google_absl//absl/container:flat_hash_set",
     ],
 )
 

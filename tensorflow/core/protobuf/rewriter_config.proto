@@ -80,6 +80,8 @@ message RewriterConfig {
   Toggle pin_to_host_optimization = 18;
   // Disable the entire meta optimizer (off by default).
   bool disable_meta_optimizer = 19;
+  // Loop optimizations (default is OFF).
+  Toggle auto_mixed_precision = 22;
 
   // Controls how many times we run the optimizers in meta optimizer (default
   // is once).

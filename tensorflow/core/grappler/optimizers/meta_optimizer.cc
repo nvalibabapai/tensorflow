@@ -29,6 +29,7 @@ limitations under the License.
 #include "tensorflow/core/grappler/optimizers/experimental_implementation_selector.h"
 #include "tensorflow/core/grappler/optimizers/function_optimizer.h"
 #include "tensorflow/core/grappler/optimizers/layout_optimizer.h"
+#include "tensorflow/core/grappler/optimizers/auto_mixed_precision.h"
 #include "tensorflow/core/grappler/optimizers/loop_optimizer.h"
 #include "tensorflow/core/grappler/optimizers/memory_optimizer.h"
 #include "tensorflow/core/grappler/optimizers/model_pruner.h"
@@ -118,6 +119,7 @@ std::unique_ptr<GraphOptimizer> MetaOptimizer::MakeNewOptimizer(
   MK_OPT("memory", new MemoryOptimizer(RewriterConfig::MANUAL));
   MK_OPT("arithmetic", new ArithmeticOptimizer(cfg_.arithmetic_optimization()));
   MK_OPT("autoparallel", new AutoParallel(cfg_.auto_parallel().num_replicas()));
+  MK_OPT("amp", new AutoMixedPrecision());
   MK_OPT("loop", new LoopOptimizer(cfg_.loop_optimization(), cpu_device_));
   MK_OPT("dependency", new DependencyOptimizer(cfg_.dependency_optimization()));
   MK_OPT("debug_stripper", new DebugStripper());
@@ -171,6 +173,9 @@ Status MetaOptimizer::InitializeOptimizers(
   if (cfg_.arithmetic_optimization() != RewriterConfig::OFF) {
     optimizers->push_back(
         MakeUnique<ArithmeticOptimizer>(cfg_.arithmetic_optimization()));
+  }
+  if (cfg_.auto_mixed_precision() == RewriterConfig::ON) {
+    optimizers->push_back(MakeUnique<AutoMixedPrecision>());
   }
   if (cfg_.loop_optimization() != RewriterConfig::OFF) {
     optimizers->push_back(
@@ -680,6 +685,7 @@ bool MetaOptimizerEnabled(const ConfigProto& cfg) {
          rewrite_cfg.dependency_optimization() != RewriterConfig::OFF ||
          rewrite_cfg.auto_parallel().enable() ||
          rewrite_cfg.memory_optimization() != RewriterConfig::NO_MEM_OPT ||
+         rewrite_cfg.auto_mixed_precision() == RewriterConfig::ON ||
          rewrite_cfg.debug_stripper() == RewriterConfig::ON ||
          rewrite_cfg.scoped_allocator_optimization() == RewriterConfig::ON ||
          rewrite_cfg.pin_to_host_optimization() != RewriterConfig::OFF ||
